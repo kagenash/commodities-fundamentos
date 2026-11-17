@@ -2,7 +2,7 @@
 
 # Commodity fundamentals: sugar
 
-A Python study of what drives international sugar prices, seen from Brazil, the world's largest exporter. It downloads public series from FRED, stores them in SQLite, measures how sugar moves with oil and the Brazilian real and computes the ethanol–sugar parity, with a CLI (`argparse`), SQL queries and tests.
+A Python study of what drives international sugar prices, seen from Brazil, the world's largest exporter. It downloads public series from FRED, stores them in SQLite, measures how sugar moves with oil and the Brazilian real, computes the ethanol–sugar parity and estimates sugar output from cane, ATR and mix, with a CLI (`argparse`), SQL queries and tests.
 
 ## Commands
 
@@ -10,6 +10,7 @@ A Python study of what drives international sugar prices, seen from Brazil, the 
 |---|---|---|
 | `relatorio` | Downloads No. 11 sugar and Brent (IMF) and BRL per USD (Fed) from FRED, stores them in SQLite, computes a rolling correlation and a regression of monthly returns, and writes charts and a Markdown summary | `python -m fundamentos relatorio --inicio 2005-01` |
 | `paridade` | Computes the sugar price (c/lb) that pays for ATR as well as ethanol does, and sugar's premium over ethanol | `python -m fundamentos paridade --etanol 2800 --cambio 5.40 --acucar 18.5` |
+| `producao` | Estimates sugar output from cane crushed, ATR and mix (the figures in UNICA's fortnightly reports) | `python -m fundamentos producao --cana 600 --atr 138 --mix 52` |
 
 ## Hypotheses
 
@@ -40,7 +41,7 @@ Requires Python 3.10+. Downloaded CSVs and the SQLite file live in `dados/`, out
 
 ## Tests
 
-Unit conversions, parity, FRED parsing, the regression, the SQL query and the CLI have unit tests on synthetic data:
+Unit conversions, parity, the output estimate, FRED parsing, the regression, the SQL query and the CLI have unit tests on synthetic data:
 
 ```bash
 pytest -v
@@ -52,11 +53,19 @@ pytest -v
 parity (c/lb) = ethanol (R$/m³) × 1.0453 / (ethanol ATR factor × BRL per USD × 22.0462)
 ```
 
-ATR factors used by UNICA: 1.0453 kg per kg of VHP sugar; 1.6761 kg per litre of hydrous ethanol and 1.7492 per litre of anhydrous. Simplified: mill-gate ethanol price net of taxes, with no freight, port elevation or polarization premium.
+ATR factors used by UNICA: 1.0453 kg per kg of VHP sugar; 1.6761 kg per litre of hydrous ethanol and 1.7492 per litre of anhydrous. Simplified: mill-gate ethanol price net of taxes, ignoring sugar export costs (freight and port).
+
+## Output estimate
+
+```text
+sugar (Mt) = cane (Mt) × ATR (kg/t) × mix ÷ 1.0453 ÷ 1,000
+```
+
+The mix is the share of ATR that goes to sugar, as a fraction (52% = 0.52). Example: 600 Mt of cane, ATR of 138 kg/t and a 52% sugar mix give about 41.2 Mt of VHP sugar.
 
 ## Limitations and next steps
 
-Monthly IMF averages rather than daily ICE settlements, released with a lag of a few weeks; correlation is not causation, hence the rolling window and robust standard errors. Next: read UNICA's fortnightly crush reports (cane, ATR, mix) and estimate Centre-South output (cane × ATR × mix ÷ 1.0453), towards a supply and demand balance.
+Monthly IMF averages rather than daily ICE settlements, released with a lag of a few weeks; correlation is not causation: the numbers show what tends to move together in the same month, not what causes what. Next: read UNICA's fortnightly crush reports (cane, ATR, mix) automatically to feed the output estimate and build a supply and demand balance.
 
 ## License
 

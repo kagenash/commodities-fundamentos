@@ -1,7 +1,5 @@
 """Base em SQLite e consultas em SQL."""
 
-from __future__ import annotations
-
 import sqlite3
 from contextlib import closing
 from pathlib import Path

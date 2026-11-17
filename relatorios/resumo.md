@@ -17,13 +17,13 @@ Período analisado: 2005-01 a 2026-09 (261 meses). Gerado com `python -m fundame
 Correlação dos retornos mensais no período todo: açúcar × Brent = 0,29; açúcar × câmbio = -0,36.
 Na janela móvel de 24 meses, o valor mais recente é 0,29 (Brent) e 0,02 (câmbio).
 
-Regressão (MQO) do retorno mensal do açúcar, com erros-padrão robustos (HC1):
+Regressão (MQO) do retorno mensal do açúcar contra o Brent e o câmbio:
 
 | Variável | Coeficiente | Erro-padrão | p-valor |
 | --- | --- | --- | --- |
-| Constante | 0,004 | 0,004 | 0,370 |
-| Brent | 0,127 | 0,048 | 0,008 |
-| Câmbio (R$/US$) | -0,615 | 0,139 | 0,000 |
+| Constante | 0,004 | 0,004 | 0,371 |
+| Brent | 0,127 | 0,051 | 0,013 |
+| Câmbio (R$/US$) | -0,615 | 0,132 | 0,000 |
 
 R² = 0,15; N = 260 meses. Como os retornos estão em log, um coeficiente de 0,10 indica que 1% de alta na variável vem, em média, com 0,10% de alta no açúcar no mesmo mês.
 

@@ -1,7 +1,5 @@
 """Transformações e estatísticas do estudo."""
 
-from __future__ import annotations
-
 import numpy as np
 import pandas as pd
 
@@ -29,11 +27,11 @@ def correlacao_movel(retornos: pd.DataFrame, alvo="acucar", outras=("brent", "ca
 
 
 def regressao(retornos: pd.DataFrame, alvo="acucar", explicativas=("brent", "cambio")):
-    """MQO do retorno mensal do açúcar contra petróleo e câmbio, com erros-padrão robustos (HC1)."""
+    """MQO do retorno mensal do açúcar contra petróleo e câmbio."""
     import statsmodels.api as sm
 
     matriz = sm.add_constant(retornos[list(explicativas)])
-    return sm.OLS(retornos[alvo], matriz).fit(cov_type="HC1")
+    return sm.OLS(retornos[alvo], matriz).fit()
 
 
 def variacao_12_meses(serie: pd.Series) -> float:

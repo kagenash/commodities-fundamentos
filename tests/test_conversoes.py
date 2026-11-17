@@ -3,6 +3,7 @@ import pytest
 from fundamentos.conversoes import (
     centavos_lb_para_brl_t,
     centavos_lb_para_usd_t,
+    estimar_producao_acucar,
     paridade_etanol_c_lb,
     premio_acucar_sobre_etanol,
     receita_acucar_por_kg_atr,
@@ -36,3 +37,8 @@ def test_real_mais_fraco_baixa_a_paridade_em_dolar():
 
 def test_anidro_usa_mais_atr_por_litro_que_o_hidratado():
     assert paridade_etanol_c_lb(2500, 5.0, "anidro") < paridade_etanol_c_lb(2500, 5.0, "hidratado")
+
+
+def test_estimativa_de_producao_de_acucar():
+    # 600 mi t de cana x 138 kg/t = 82,8 mi t de ATR; 52% vão para o açúcar; 1,0453 kg de ATR por kg de VHP
+    assert estimar_producao_acucar(600, 138, 52) == pytest.approx(41.19, abs=0.01)

@@ -25,10 +25,10 @@ def test_relatorio_gera_resumo_e_graficos(tmp_path, base_sintetica):
 def test_linha_de_comando_offline_le_o_cache(tmp_path, base_sintetica):
     pasta_brutos = tmp_path / "dados" / "brutos"
     pasta_brutos.mkdir(parents=True)
-    for nome, serie in SERIES.items():
-        linhas = ["observation_date," + serie.codigo]
+    for nome, codigo in SERIES.items():
+        linhas = ["observation_date," + codigo]
         linhas += [f"{mes.start_time:%Y-%m-%d},{valor}" for mes, valor in base_sintetica[nome].items()]
-        (pasta_brutos / f"{serie.codigo}.csv").write_text("\n".join(linhas), encoding="utf-8")
+        (pasta_brutos / f"{codigo}.csv").write_text("\n".join(linhas), encoding="utf-8")
     main(["relatorio", "--offline", "--dados", str(tmp_path / "dados"), "--saida", str(tmp_path / "saida"), "--inicio", "2020-01"])
     assert (tmp_path / "saida" / "resumo.md").exists()
 
@@ -43,3 +43,8 @@ def test_linha_de_comando_paridade(capsys):
 def test_numero_no_padrao_brasileiro():
     assert numero_br(1234.567) == "1.234,57"
     assert numero_br(-0.5, 1) == "-0,5"
+
+
+def test_linha_de_comando_producao(capsys):
+    main(["producao", "--cana", "600", "--atr", "138", "--mix", "52"])
+    assert "Açúcar estimado: 41,2 milhões de t" in capsys.readouterr().out

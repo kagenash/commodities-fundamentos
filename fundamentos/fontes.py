@@ -1,10 +1,7 @@
 """Download e cache das séries mensais do estudo. Fonte: FRED, sem chave de API."""
 
-from __future__ import annotations
-
 import io
 import warnings
-from dataclasses import dataclass
 from pathlib import Path
 from urllib.error import URLError
 from urllib.request import Request, urlopen
@@ -13,18 +10,11 @@ import pandas as pd
 
 URL_FRED_CSV = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={codigo}"
 
-
-@dataclass(frozen=True)
-class Serie:
-    codigo: str
-    descricao: str
-    unidade: str
-
-
+# Códigos das séries no FRED
 SERIES = {
-    "acucar": Serie("PSUGAISAUSDM", "Açúcar nº 11, preço global (FMI)", "c/lb"),
-    "brent": Serie("POILBREUSDM", "Petróleo Brent, preço global (FMI)", "US$/barril"),
-    "cambio": Serie("EXBZUS", "Câmbio, média mensal (Federal Reserve)", "R$ por US$"),
+    "acucar": "PSUGAISAUSDM",  # açúcar nº 11, preço global (FMI), em c/lb
+    "brent": "POILBREUSDM",  # petróleo Brent, preço global (FMI), em US$/barril
+    "cambio": "EXBZUS",  # câmbio, média mensal (Federal Reserve), em R$ por US$
 }
 
 
@@ -41,12 +31,12 @@ def ler_csv_fred(texto: str, nome: str) -> pd.Series:
 
 def baixar_serie(nome: str, pasta_cache: Path, atualizar: bool = True) -> pd.Series:
     """Baixa a série do FRED e guarda o CSV. Sem internet, usa o último CSV salvo."""
-    serie = SERIES[nome]
+    codigo = SERIES[nome]
     pasta_cache.mkdir(parents=True, exist_ok=True)
-    arquivo = pasta_cache / f"{serie.codigo}.csv"
+    arquivo = pasta_cache / f"{codigo}.csv"
     if atualizar:
         pedido = Request(
-            URL_FRED_CSV.format(codigo=serie.codigo),
+            URL_FRED_CSV.format(codigo=codigo),
             headers={"User-Agent": "commodities-fundamentos/0.1"},
         )
         try:
@@ -54,10 +44,10 @@ def baixar_serie(nome: str, pasta_cache: Path, atualizar: bool = True) -> pd.Ser
                 arquivo.write_bytes(resposta.read())
         except URLError as erro:
             if not arquivo.exists():
-                raise RuntimeError(f"Não consegui baixar {serie.codigo} e não há cache em {arquivo}") from erro
-            warnings.warn(f"Falha ao baixar {serie.codigo}; usando o cache de {arquivo}", stacklevel=2)
+                raise RuntimeError(f"Não consegui baixar {codigo} e não há cache em {arquivo}") from erro
+            warnings.warn(f"Falha ao baixar {codigo}; usando o cache de {arquivo}", stacklevel=2)
     if not arquivo.exists():
-        raise FileNotFoundError(f"Sem cache para {serie.codigo} em {arquivo}; rode sem --offline")
+        raise FileNotFoundError(f"Sem cache para {codigo} em {arquivo}; rode sem --offline")
     return ler_csv_fred(arquivo.read_text(encoding="utf-8"), nome)
 
 

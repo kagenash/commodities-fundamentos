@@ -1,7 +1,5 @@
 """Gera os gráficos e o resumo em Markdown."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import matplotlib
@@ -118,7 +116,7 @@ def gerar_relatorio(base: pd.DataFrame, pasta_saida: Path, caminho_banco: Path, 
         f"Na janela móvel de {janela} meses, o valor mais recente é "
         f"{numero_br(correlacoes['brent'].iloc[-1])} (Brent) e {numero_br(correlacoes['cambio'].iloc[-1])} (câmbio).",
         "",
-        "Regressão (MQO) do retorno mensal do açúcar, com erros-padrão robustos (HC1):",
+        "Regressão (MQO) do retorno mensal do açúcar contra o Brent e o câmbio:",
         "",
         "| Variável | Coeficiente | Erro-padrão | p-valor |",
         "| --- | --- | --- | --- |",

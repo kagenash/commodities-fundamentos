@@ -1,10 +1,8 @@
-"""Conversões de unidade e paridade etanol x açúcar.
+"""Conversões de unidade, paridade etanol x açúcar e estimativa de produção.
 
 Coeficientes de ATR usados pela UNICA (kg de ATR por kg de açúcar ou por litro de etanol):
 açúcar VHP 1,0453; açúcar branco 1,0495; etanol anidro 1,7492; etanol hidratado 1,6761.
 """
-
-from __future__ import annotations
 
 LIBRAS_POR_TONELADA = 2204.62262
 
@@ -40,7 +38,7 @@ def receita_etanol_por_kg_atr(preco_brl_m3, tipo="hidratado"):
 def paridade_etanol_c_lb(preco_etanol_brl_m3, cambio_brl_usd, tipo_etanol="hidratado", tipo_acucar="vhp"):
     """Preço do açúcar, em c/lb, que paga pelo ATR o mesmo que o etanol.
 
-    Versão simplificada: não desconta frete, elevação portuária nem prêmio de polarização.
+    Versão simplificada: não desconta os custos de exportação do açúcar (frete e porto).
     """
     receita = receita_etanol_por_kg_atr(preco_etanol_brl_m3, tipo_etanol)
     brl_por_tonelada = receita * ATR_POR_KG_ACUCAR[tipo_acucar] * 1000
@@ -51,3 +49,12 @@ def premio_acucar_sobre_etanol(preco_acucar_c_lb, preco_etanol_brl_m3, cambio_br
     """Prêmio do açúcar sobre o etanol, em %. Positivo: o açúcar paga mais pelo ATR."""
     paridade = paridade_etanol_c_lb(preco_etanol_brl_m3, cambio_brl_usd, tipo_etanol)
     return (preco_acucar_c_lb / paridade - 1) * 100
+
+
+def estimar_producao_acucar(cana_mi_t, atr_kg_por_t, mix_acucar_pct, tipo="vhp"):
+    """Açúcar produzido, em milhões de t, a partir da cana moída, do ATR médio e do mix açucareiro.
+
+    Exemplo: 600 mi t de cana, ATR de 138 kg/t e mix de 52% dão cerca de 41,2 mi t de açúcar VHP.
+    """
+    atr_total_mi_t = cana_mi_t * atr_kg_por_t / 1000
+    return atr_total_mi_t * mix_acucar_pct / 100 / ATR_POR_KG_ACUCAR[tipo]

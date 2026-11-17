@@ -1,11 +1,9 @@
-"""Linha de comando: python -m fundamentos relatorio | paridade."""
-
-from __future__ import annotations
+"""Linha de comando: python -m fundamentos relatorio | paridade | producao."""
 
 import argparse
 from pathlib import Path
 
-from .conversoes import paridade_etanol_c_lb, premio_acucar_sobre_etanol
+from .conversoes import estimar_producao_acucar, paridade_etanol_c_lb, premio_acucar_sobre_etanol
 from .fontes import carregar_base
 from .relatorio import gerar_relatorio, numero_br
 
@@ -27,11 +25,21 @@ def main(argv=None) -> None:
     paridade.add_argument("--acucar", type=float, help="açúcar nº 11 em c/lb, para calcular o prêmio")
     paridade.add_argument("--tipo", choices=("hidratado", "anidro"), default="hidratado")
 
+    producao = comandos.add_parser("producao", help="estimativa de produção de açúcar")
+    producao.add_argument("--cana", type=float, required=True, help="cana moída, em milhões de t")
+    producao.add_argument("--atr", type=float, required=True, help="ATR médio, em kg por t de cana")
+    producao.add_argument("--mix", type=float, required=True, help="mix açucareiro, em %% do ATR")
+
     args = parser.parse_args(argv)
     if args.comando == "relatorio":
         base = carregar_base(args.dados / "brutos", inicio=args.inicio, atualizar=not args.offline)
         resumo = gerar_relatorio(base, args.saida, args.dados / "precos.db", janela=args.janela)
         print(f"Resumo gerado em {resumo}")
+        return
+
+    if args.comando == "producao":
+        acucar = estimar_producao_acucar(args.cana, args.atr, args.mix)
+        print(f"Açúcar estimado: {numero_br(acucar, 1)} milhões de t (VHP)")
         return
 
     valor_paridade = paridade_etanol_c_lb(args.etanol, args.cambio, args.tipo)

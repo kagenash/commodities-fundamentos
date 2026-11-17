@@ -2,7 +2,7 @@
 
 # Fundamentos de commodities: açúcar
 
-Estudo em Python sobre o que move o preço internacional do açúcar, olhando para o Brasil, maior exportador do mundo. Baixa séries públicas do FRED, guarda tudo em SQLite, mede a relação do açúcar com o petróleo e o câmbio e calcula a paridade entre etanol e açúcar, com CLI (`argparse`), consultas SQL e testes.
+Estudo em Python sobre o que move o preço internacional do açúcar, olhando para o Brasil, maior exportador do mundo. Baixa séries públicas do FRED, guarda tudo em SQLite, mede a relação do açúcar com o petróleo e o câmbio, calcula a paridade entre etanol e açúcar e estima a produção de açúcar a partir de cana, ATR e mix, com CLI (`argparse`), consultas SQL e testes.
 
 ## Comandos
 
@@ -10,6 +10,7 @@ Estudo em Python sobre o que move o preço internacional do açúcar, olhando pa
 |---|---|---|
 | `relatorio` | Baixa do FRED o açúcar nº 11 e o Brent (FMI) e o câmbio R$/US$ (Fed), grava em SQLite, calcula correlação móvel e regressão dos retornos mensais e gera gráficos e um resumo em Markdown | `python -m fundamentos relatorio --inicio 2005-01` |
 | `paridade` | Calcula o preço do açúcar (c/lb) que remunera o ATR igual ao etanol e o prêmio do açúcar sobre o etanol | `python -m fundamentos paridade --etanol 2800 --cambio 5.40 --acucar 18.5` |
+| `producao` | Estima a produção de açúcar a partir da cana moída, do ATR e do mix (os números do acompanhamento quinzenal da UNICA) | `python -m fundamentos producao --cana 600 --atr 138 --mix 52` |
 
 ## Hipóteses testadas
 
@@ -40,7 +41,7 @@ Requer Python 3.10+. Os CSVs baixados e o SQLite ficam em `dados/`, fora do Git;
 
 ## Testes
 
-Conversões de unidade, paridade, leitura do FRED, regressão, consulta SQL e CLI têm testes unitários com dados sintéticos:
+Conversões de unidade, paridade, estimativa de produção, leitura do FRED, regressão, consulta SQL e CLI têm testes unitários com dados sintéticos:
 
 ```bash
 pytest -v
@@ -56,7 +57,18 @@ paridade (c/lb) = etanol (R$/m³) × 1,0453 / (coeficiente do etanol × câmbio 
 
 - 1,0453 kg de ATR por kg de açúcar VHP; 1,6761 kg de ATR por litro de etanol hidratado e 1,7492 por litro de anidro (coeficientes usados pela UNICA).
 - 22,0462 converte US$/t em c/lb.
-- Versão simplificada: usa o preço do etanol na usina, sem impostos, e não desconta frete, elevação portuária nem prêmio de polarização do VHP.
+- Versão simplificada: usa o preço do etanol na usina, sem impostos, e não desconta os custos de exportação do açúcar (frete e porto).
+
+## Estimativa de produção
+
+Com a cana moída, o ATR e o mix, números que a UNICA divulga a cada quinzena, dá para estimar quanto açúcar a safra produz:
+
+```text
+açúcar (mi t) = cana (mi t) × ATR (kg/t) × mix ÷ 1,0453 ÷ 1.000
+```
+
+- O mix entra em fração (52% = 0,52): é a parte do ATR que vai para o açúcar.
+- Exemplo: 600 milhões de t de cana, ATR de 138 kg/t e mix de 52% dão cerca de 41,2 milhões de t de açúcar VHP.
 
 ## Estrutura
 
@@ -64,7 +76,7 @@ paridade (c/lb) = etanol (R$/m³) × 1,0453 / (coeficiente do etanol × câmbio 
 commodities-fundamentos/
 ├── fundamentos/
 │   ├── fontes.py          # download e cache das séries (FRED)
-│   ├── conversoes.py      # unidades e paridade etanol x açúcar
+│   ├── conversoes.py      # unidades, paridade e estimativa de produção
 │   ├── analise.py         # retornos, correlação móvel e regressão
 │   ├── banco.py           # SQLite e execução das consultas
 │   ├── relatorio.py       # gráficos e resumo em Markdown
@@ -80,8 +92,8 @@ commodities-fundamentos/
 ## Limitações e próximos passos
 
 - São médias mensais do FMI, não fechamentos diários da ICE, e a série sai com algumas semanas de atraso.
-- Correlação não é causalidade; por isso a janela móvel e a regressão com erros-padrão robustos.
-- Próximo passo: ler o acompanhamento quinzenal da UNICA (moagem, ATR, mix) e estimar a produção do Centro-Sul (cana × ATR × mix ÷ 1,0453), rumo a um balanço de oferta e demanda.
+- Correlação não é causalidade: os números mostram o que costuma andar junto no mesmo mês, não o que causa o quê.
+- Próximo passo: ler automaticamente o acompanhamento quinzenal da UNICA (moagem, ATR, mix) para alimentar a estimativa de produção e montar um balanço de oferta e demanda.
 
 ## Fontes
 
